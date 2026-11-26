@@ -1,0 +1,16 @@
+body.browser { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+#toolbar { display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: var(--bg-2); border-bottom: 1px solid var(--line); }
+#toolbar > button { width: 34px; height: 34px; border-radius: 9px; border: 0; background: transparent; cursor: pointer; font-size: 19px; line-height: 1; color: var(--muted); }
+#toolbar > button:hover { background: var(--card-2); color: var(--fg); }
+#url-form { flex: 1; display: flex; margin: 0 6px; }
+#url { flex: 1; min-width: 0; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--fg); font: inherit; font-size: 14px; outline: none; }
+#url:focus { border-color: rgb(139 92 246 / .7); box-shadow: 0 0 0 3px rgb(139 92 246 / .15); }
+#home { display: flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 600; padding: 6px 12px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); font-size: 14px; }
+#home:hover { background: var(--card-2); }
+#home svg { width: 18px; height: 18px; }
+#launch-banner { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: linear-gradient(90deg, rgb(139 92 246 / .35), rgb(34 211 238 / .25)); border-bottom: 1px solid var(--line); }
+#launch-text { flex: 1; font-weight: 600; }
+#launch-dismiss { padding: 6px 10px; }
+#boot-status { padding: 24px; color: var(--muted); }
+#frame { flex: 1; width: 100%; border: 0; background: #fff; }
+#frame:not(.ready) { display: none; }

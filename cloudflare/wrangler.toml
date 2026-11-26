@@ -1,0 +1,6 @@
+name = "webblox"
+main = "worker.js"
+compatibility_date = "2026-11-01"
+
+[vars]
+ORIGIN = "https://your-webblox-server.example.com"

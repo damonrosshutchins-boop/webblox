@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WebBlox · Sign in</title>
+<link rel="stylesheet" href="/player/style.css">
+<link rel="stylesheet" href="/player/browser.css">
+</head>
+<body class="browser">
+<nav id="toolbar">
+  <button id="back" title="Back" aria-label="Back">‹</button>
+  <button id="forward" title="Forward" aria-label="Forward">›</button>
+  <button id="reload" title="Reload" aria-label="Reload">↻</button>
+  <form id="url-form"><input id="url" spellcheck="false" autocomplete="off" aria-label="Address"></form>
+  <a id="home" href="/player/" title="Back to WebBlox"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2 29 9.5v13L16 30 3 22.5v-13z" fill="url(#hb-g)"/><path d="M16 2 29 9.5 16 17 3 9.5z" fill="#fff" fill-opacity=".28"/><defs><linearGradient id="hb-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b5cf6"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs></svg>Games</a>
+</nav>
+<div id="launch-banner" hidden>
+  <span id="launch-text">Game ready.</span>
+  <button id="launch-open" class="btn primary">Open player</button>
+  <button id="launch-dismiss" class="btn ghost" aria-label="Dismiss">✕</button>
+</div>
+<div id="boot-status">Starting browser…</div>
+<iframe id="frame" title="Roblox"></iframe>
+
+<script src="/player/sj/scramjet.js"></script>
+<script src="/player/sj/controller.api.js"></script>
+<script type="module" src="/player/browser.js"></script>
+</body>
+</html>
