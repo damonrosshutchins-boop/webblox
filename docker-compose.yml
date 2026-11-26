@@ -5,7 +5,8 @@ services:
     ports:
       - "8080:8080"
     environment:
-      # Engine files from a GitHub repo built by .github/workflows/fetch-vendor.yml.
+      # Engine files from this fork's GitHub Pages mirror of ytsodacan/webblox-files
+      # (rebuilt by that repo's .github/workflows/fetch-vendor.yml + Pages).
       # Remove to use a local vendor/ folder (node scripts/fetch-vendor.mjs).
-      ENGINE_SOURCE: github:ytsodacan/webblox-files
+      ENGINE_SOURCE: https://damonrosshutchins-boop.github.io/webblox-files/vendor/
       CDN_ONLY: "1"

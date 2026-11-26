@@ -14,7 +14,7 @@ Or with Node 22 on a recent distro:
 
 ```
 npm install
-ENGINE_SOURCE=github:ytsodacan/webblox-files CDN_ONLY=1 npm start
+ENGINE_SOURCE=https://damonrosshutchins-boop.github.io/webblox-files/vendor/ CDN_ONLY=1 npm start
 ```
 
 Serve it over HTTPS (service workers need it), e.g. behind a Cloudflare tunnel or Caddy. WebSocket upgrades must pass through.
@@ -22,6 +22,7 @@ Serve it over HTTPS (service workers need it), e.g. behind a Cloudflare tunnel o
 Environment:
 - `PORT` (default 8080).
 - `ENGINE_SOURCE=github:owner/repo[@branch]`: engine files come from that repo; browsers download them straight from jsDelivr (raw GitHub as fallback). Build your own copy with `.github/workflows/fetch-vendor.yml` in a repo of your own. `GITHUB_TOKEN` for a private repo.
+- `ENGINE_SOURCE=https://host/path/vendor/`: engine files from any static mirror of the same layout (GitHub Pages, S3, ...); browsers download them straight from that base. This fork points at `https://damonrosshutchins-boop.github.io/webblox-files/vendor/`.
 - `CDN_ONLY=1`: ignore a local `vendor/`.
 - Without `ENGINE_SOURCE`, run `node scripts/fetch-vendor.mjs` to download the engine into `vendor/` (about 400 MB).
 

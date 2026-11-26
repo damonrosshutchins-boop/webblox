@@ -28,19 +28,27 @@ const stamp = (text) => text
 const PORT = Number(process.env.PORT || 8080);
 // Where engine files come from when they aren't in vendor/ locally:
 //   ENGINE_SOURCE=github:<owner>/<repo>[@branch]  raw GitHub (GITHUB_TOKEN for a private repo)
+//   ENGINE_SOURCE=https://<host>/<path>/vendor/   any static mirror of the same layout
 //   otherwise                                     Roblox's CDN
 // Either way this server fetches them; the browser only ever talks to us.
 const CURRENT = path.join(ROOT, "vendor/CURRENT");
 const CDN_ONLY = !!process.env.CDN_ONLY; // ignore local vendor/ (testing)
-const GH = /^github:([^@]+)(?:@(.+))?$/.exec(process.env.ENGINE_SOURCE || "");
+const ENGINE_SOURCE = process.env.ENGINE_SOURCE || "";
+const GH = /^github:([^@]+)(?:@(.+))?$/.exec(ENGINE_SOURCE);
 const GH_RAW = GH && `https://raw.githubusercontent.com/${GH[1]}/${GH[2] || "main"}/vendor/`;
+// A plain http(s) base is a static mirror (GitHub Pages, S3, ...). It sends
+// CORS headers, so the browser can load engine data from it directly.
+const MIRROR = !GH && /^https?:\/\//.test(ENGINE_SOURCE)
+  ? ENGINE_SOURCE.replace(/\/?$/, "/")
+  : null;
+const UPSTREAM = GH_RAW || MIRROR;
 const upstreamHeaders = GH && process.env.GITHUB_TOKEN ? { Authorization: `token ${process.env.GITHUB_TOKEN}` } : {};
 const upstreamText = async (u) => { const r = await fetch(u, { headers: upstreamHeaders }); if (!r.ok) throw new Error(`${r.status} ${u}`); return r.text(); };
 const VERSION = fs.existsSync(CURRENT) && !CDN_ONLY ? fs.readFileSync(CURRENT, "utf8").trim()
-  : GH ? (await upstreamText(GH_RAW + "CURRENT")).trim()
+  : UPSTREAM ? (await upstreamText(UPSTREAM + "CURRENT")).trim()
   : (await (await fetch("https://clientsettings.roblox.com/v2/client-version/WebClientApp")).json()).clientVersionUpload;
-const CDN = GH ? `${GH_RAW}${VERSION}/` : `https://setup.rbxcdn.com/webclient/${VERSION}-RobloxWebClient/`;
-console.log(`engine source: ${GH ? `github ${GH[1]}` : "Roblox CDN"} (local vendor/ first${CDN_ONLY ? ", disabled" : ""})`);
+const CDN = UPSTREAM ? `${UPSTREAM}${VERSION}/` : `https://setup.rbxcdn.com/webclient/${VERSION}-RobloxWebClient/`;
+console.log(`engine source: ${GH ? `github ${GH[1]}` : MIRROR || "Roblox CDN"} (local vendor/ first${CDN_ONLY ? ", disabled" : ""})`);
 const cdnCache = new Map();
 async function fromCdn(rel) {
   if (!cdnCache.has(rel)) cdnCache.set(rel, fetch(CDN + rel, { headers: upstreamHeaders }).then(async (r) => {
@@ -105,8 +113,10 @@ const server = http.createServer((req, res) => {
   else if (rel === "flags.json") file = FLAGS_FILE;
   else if (rel === "wt.json") { res.writeHead(200, { "Content-Type": "application/json", "Cache-Control": "no-store" }); res.end(JSON.stringify(wt)); return; }
   else if (rel === "engine-source.json") {
-    // Tells the service worker to load engine data straight from jsDelivr (no proxy).
-    const body = GH ? { base: `https://cdn.jsdelivr.net/gh/${GH[1]}@${GH[2] || "main"}/vendor/`, fallback: GH_RAW, version: VERSION } : null;
+    // Tells the service worker to load engine data straight from the CDN
+    // (jsDelivr for GitHub, the mirror itself otherwise), no proxy in between.
+    const jsd = GH && `https://cdn.jsdelivr.net/gh/${GH[1]}@${GH[2] || "main"}/vendor/`;
+    const body = UPSTREAM ? { base: jsd || MIRROR, fallback: GH_RAW || MIRROR, version: VERSION } : null;
     res.writeHead(200, { "Content-Type": "application/json", "Cache-Control": "no-cache" }); res.end(JSON.stringify(body)); return;
   }
   else if (rel === "version.txt") { res.writeHead(200, { "Content-Type": "text/plain" }); res.end(VERSION); return; }
@@ -124,7 +134,7 @@ const server = http.createServer((req, res) => {
     // Split by the GitHub Action into <name>.part00, .part01… (19 MB each):
     // 404 the whole file so the service worker fetches and rejoins the parts.
     if (!fs.existsSync(file) && fs.existsSync(file + ".part00")) { res.writeHead(404); res.end(); return; }
-    if (!GH && /\.part\d+$/.test(file) && !fs.existsSync(file)) { res.writeHead(404); res.end(); return; }
+    if (!UPSTREAM && /\.part\d+$/.test(file) && !fs.existsSync(file)) { res.writeHead(404); res.end(); return; }
     const local = !CDN_ONLY && fs.existsSync(file);
     if (/\.js$/.test(engineRel)) {
       (local ? Promise.resolve(fs.readFileSync(file)) : fromCdn(engineRel)).then((code) => {
@@ -161,7 +171,7 @@ const server = http.createServer((req, res) => {
     }
   }
   if (rel === "flags.json" && (CDN_ONLY || !fs.existsSync(FLAGS_FILE))) {
-    (GH ? upstreamText(`${GH_RAW}${VERSION}.flags.json`)
+    (UPSTREAM ? upstreamText(`${UPSTREAM}${VERSION}.flags.json`)
       : fetch("https://clientsettingscdn.roblox.com/v2/settings/application/WebClientApp").then((r) => r.text()))
       .then((t) => { res.writeHead(200, { "Content-Type": "application/json", "Cache-Control": "no-cache" }); res.end(t); })
       .catch((e) => { res.writeHead(502); res.end(String(e.message)); });
