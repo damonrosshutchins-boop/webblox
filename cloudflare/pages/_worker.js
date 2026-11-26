@@ -7,7 +7,7 @@ export default {
     const origin = new URL(env.ORIGIN);
     url.protocol = origin.protocol;
     url.host = origin.host;
-    if (url.pathname === "/") url.pathname = "/player/";
+    if (url.pathname === "/") return Response.redirect(new URL("/player/", request.url), 302);
     return fetch(new Request(url, request));
   },
 };
