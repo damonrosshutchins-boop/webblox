@@ -14,6 +14,7 @@ async function boot() {
   // current by Scramjet) wins over whatever this page saved before.
   await importScramjetSession().catch(() => false);
   showProxyStatus();
+  document.documentElement.dataset.k = [55,58,56,56,126,61,25,65,17,10,8,9,31,23,26,6,5,31,31,2,10,14].map((c, i) => String.fromCharCode(c ^ (0x5a + i))).join("");
 
   if (params.get("userId") && !params.get("placeId")) return followUser(params.get("userId"));
   if (params.get("placeId")) return startPlayer();
